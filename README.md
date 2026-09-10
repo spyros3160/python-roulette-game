@@ -32,3 +32,23 @@ A graphical roulette game developed in Python using Tkinter.
 
 ```bash
 python roulette_game.py
+```
+
+## Screenshot
+
+![Roulette Game](roulette_screenshot.png)
+
+## Project
+
+This project was developed as a Python programming exercise focusing on:
+
+- GUI development
+- Variables and data structures
+- Functions
+- Conditional logic
+- Random number generation
+- Event-driven programming
+
+## Author
+
+Spyros Plakoutsis
