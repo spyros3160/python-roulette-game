@@ -156,7 +156,7 @@ def show_bot_bets():
         if bet_type_bot == "color":
             value = random.choice(["Κόκκινο", "Μαύρο"])
         elif bet_type_bot == "dozen":
-            value = random.choice(["1η 12αδα (1-12)", "2η 12αδα (13-24)", "3η 12αδα(25-36)"])
+            value = random.choice(["1η 12άδα (1-12)", "2η 12άδα (13-24)", "3η 12άδα (25-36)"])
         else:
             value = random.randint(0, 36)
 
