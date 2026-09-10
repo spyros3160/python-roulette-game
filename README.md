@@ -31,4 +31,4 @@ A graphical roulette game developed in Python using Tkinter.
 3. Run the following command:
 
 ```bash
-python Project55_e_roulette.py
+python roulette_game.py
