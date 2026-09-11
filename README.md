@@ -1,7 +1,6 @@
 # Python Roulette Game
 
-A graphical roulette game developed in Python using Tkinter.
-
+A desktop roulette game built with Python and Tkinter, featuring player betting, computer-controlled bots, balance management, betting history, and Auto Play mode.
 
 ## Features
 
@@ -18,6 +17,20 @@ A graphical roulette game developed in Python using Tkinter.
 - Round results and betting history
 - Auto Play mode
 - Dark-themed interface
+
+## Gameplay
+
+The player starts with a balance of 300 credits and can place bets on:
+
+- A specific number (0–36)
+- Red or Black
+- One of the three dozens
+
+Three computer-controlled bots place their own bets automatically.
+
+After the bets are placed, the roulette wheel spins and the results are displayed.
+
+The game also includes an Auto Play mode for automatic rounds.
 
 ## Technologies
 
@@ -41,14 +54,15 @@ python roulette_game.py
 
 ## Project
 
-This project was developed as a Python programming exercise focusing on:
+This project demonstrates practical use of Python programming concepts, including:
 
-- GUI development
+- GUI development with Tkinter
 - Variables and data structures
-- Functions
+- Functions and modular programming
 - Conditional logic
 - Random number generation
 - Event-driven programming
+- Game state and balance management
 
 ## Author
 
