@@ -1,81 +1,88 @@
-import tkinter as tk # Εισαγωγή της βιβλιοθήκης Tkinter για GUI
-from tkinter import messagebox #Εισαγωγή του module messagebox από τη βιβλιοθήκη Tkinter, το οποίο παρέχει διάφορα προκαθορισμένα παράθυρα διαλόγου για εμφάνιση μηνυμάτων προς τον χρήστη.
-import random # Εισαγωγή της βιβλιοθήκης random για τυχαίους αριθμούς
+import tkinter as tk # Import the Tkinter library for the GUI
+from tkinter import messagebox # Import the messagebox module from Tkinter, which provides predefined dialog boxes for displaying messages to the user.
+import random # Import the random library for generating random values
 
-# Εισαγωγή των κόκκινων αριθμών στη ρουλέτα σε σύνολο
+
+# Define the red numbers on the roulette wheel as a set
 RED_NUMBERS = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36}
 
-# Αρχικοποίηση λεξικών και μεταβλητών παιχνιδιού
-balances = {} # Αρχικοποίηση κενού λεξικού όπου θα κρατά τα υπόλοιπα των παικτών 
-bets = {} # Αρχικοποίηση κενού λεξικού όπου θα κρατά τα τρέχοντα πονταρίσματα κάθε παίκτη
-history = [] # Αρχικοποίηση κενής λίστας όπου θα κρατά το ιστορικό των αποτελεσμάτων
-bot_labels = {}  # Αρχικοποίηση κενού λεξικού όπου θα  περιέχει τις ετικέτες(labels) του GUI για εμφάνιση πονταρισμάτων bots
-balance_labels = {} # Αρχικοποίηση κενού λεξικού όπου θα περιέχει τις ετικετες (labels) του GUI που εμφανίζουν τα υπόλοιπα των παικτών
-results_labels = {} # Αρχικοποίηση κενού λεξικού όπου θα περιέχει τις ετικετες (labels) του GUI για να δείχνει τα αποτελέσματα (κέρδη ή απώλειες) κάθε παίκτη μετά από κάθε γύρο
 
-auto_play = None # Αρχικοποίηση global μεταβλητής με τιμή None που αργότερα θα γίνει BooleanVar (μεταβλητή Tkinter)
-                    #για σύνδεση με checkbox όπου θα ελέγχει αν το παιχνίδι θα εκτελείται αυτόματα
+# Initialize game dictionaries and variables
+balances = {} # Initialize an empty dictionary that will store the players' balances
+bets = {} # Initialize an empty dictionary that will store the current bets of each player
+history = [] # Initialize an empty list that will store the history of roulette results
+bot_labels = {}  # Initialize an empty dictionary that will contain GUI labels for displaying bot bets
+balance_labels = {} # Initialize an empty dictionary that will contain GUI labels for displaying players' balances
+results_labels = {} # Initialize an empty dictionary that will contain GUI labels for displaying each player's winnings or losses after every round
 
-roulette_result_label = None # Αρχικοποίηση global μεταβλητής με τιμή None που αργότερα θα χρησιμοποιηθεί για το
-                    #widget ετικέτας (Label) στο οποίο θα εμφανίζεται το αποτέλεσμα κάθε γύρου της ρουλέτας.
+auto_play = None # Initialize the global variable as None; it will later become a BooleanVar (Tkinter variable)
+                # used to connect to a checkbox that controls whether the game runs automatically
 
-history_label = None # Αρχικοποίηση global μεταβλητής που αρχικά δεν έχει τιμή (None) και αργότερα θα χρησιμοποιηθεί
-                     #για το widget ετικέτας (Label)που θα εμφανίζει το ιστορικό των 10 τελευταίων αποτελεσμάτων της ρουλέτας.
+roulette_result_label = None # Initialize the global variable as None; it will later be used for the
+                             # Label widget where the result of each roulette round will be displayed.
 
-bet_type = None # Αρχικοποίηση global μεταβλητής που αρχικά δεν έχει τιμή (None) και αργότερα θα γίνει μεταβλητή TKinter τύπου  StringVar() και συνδεεται με Radiobutton
-                    #Xρησιμοποιείται για να παρακολουθεί τον τύπο του ποντάρισματος που επιλέγει ο χρήστης (π.χ. "color", "number" ή "dozen").
+history_label = None # Initialize the global variable as None; it will later be used
+                     # for the Label widget that displays the last 15 roulette results.
 
-
-value_menu = None # Αρχικοποίηση  global μεταβλητής που αρχικά δεν έχει τιμή (None) και αργότερα θα γίνει ένα OptionMenu widget του Tkinter
-                    #όπου θα επιτρέπει στον χρήστη να επιλέξει μια τιμή από μια πτυσσόμενη λίστα όπως το χρώμα (κόκκινο/μαύρο), τον αριθμό (0-36) ή την 12άδα (1-12, 13-24, 25-36) για το πονταρίσμα.
-
-bet_value = None # Αρχικοποίηση global μεταβλητής που αρχικά δεν έχει τιμή (None) και αργότερα θα γίνει μεταβλητή TKinter τύπου StringVar()και συνδεεται με optionmenu
-                    # Xρησιμοποιείται για να αποθηκεύει την συγκεκριμένη τιμή που επιλέγει ο χρήστης για το πονταρίσμα (π.χ. "Κόκκινο", "32", ή "2η 12άδα (13-24)").
-                    
-bet_amount = None # Αρχικοποίηση global μεταβλητής που αρχικά δεν έχει τιμή (None) και αργότερα θα γίνει μεταβλητή TKinter τύπου  StringVar() και συνδεεται με optionmenu
-                   # Xρησιμοποιείται για να αποθηκεύει το ποσό που ποντάρει ο χρήστης σε κάθε γύρο της ρουλέτας.
+bet_type = None # Initialize the global variable as None; it will later become a Tkinter StringVar()
+                # connected to the betting type selection buttons.
+                # It is used to store the type of bet selected by the user (e.g. "color", "number", or "dozen").
 
 
-# Συνάρτηση για επαναφορά και αρχικοποίηση του παιχνιδιού
+value_menu = None # Initialize the global variable as None; it will later become a Tkinter OptionMenu widget
+                  # that allows the user to select a value from a dropdown list, such as a color (red/black),
+                  # a number (0-36), or a dozen (1-12, 13-24, 25-36) for the bet.
+
+bet_value = None # Initialize the global variable as None; it will later become a Tkinter StringVar()
+                 # connected to the OptionMenu.
+                 # It is used to store the specific value selected by the user for the bet
+                 # (e.g. "Red", "32", or "2nd Dozen (13-24)").
+
+bet_amount = None # Initialize the global variable as None; it will later become a Tkinter StringVar()
+                  # connected to the OptionMenu.
+                  # It is used to store the amount that the user bets in each roulette round.
+
+
+# Function for resetting and initializing the game
 def reset_game():
-    global balances, bets, history # Χρήση global μεταβλητών
-    balances = {"Player": 300, "Bot 1": 300, "Bot 2": 300, "Bot 3": 300} # Ορισμός αρχικού υπολοίπου για κάθε παίκτη και bot
-    bets.clear() # Καθαρισμός λεξικου με παικτες και πονταρισμάτα
+    global balances, bets # Use global variables
+    balances = {"Player": 300, "Bot 1": 300, "Bot 2": 300, "Bot 3": 300} # Set the initial balance for each player and bot
+    bets.clear() # Clear the dictionary containing players and bets
     for player in balances:
-        bets[player] = []  # Δημιουργία κενής λίστας στοιχημάτων για κάθε παίκτη
-    history.clear() # Καθαρισμός λίστας με ιστορικό αποτελεσματων
-    update_display() # Κλήση συνάρτησης όπου ενημερώνει τα widgets ετικετών (Labels) στο παράθυρο του παιχνιδιού.
-    update_result("") # Κλήση συνάρτησης όπου καθαρίζει το αποτέλεσμα της ρουλέτας στην αρχή ενός νέου παιχνιδιού με κενο string
-    update_history()# Κλήση συνάρτησης όπου καθαρίζει το ιστορικό
-    reset_bots_display()# Κλήση συνάρτησης για καθαρισμό προβολής των στοιχημάτων των bots
-    update_bet_options() # Κλήση συνάρτησης για να συγχρονίσει το περιεχόμενο του OptionMenu με τον τρέχοντα τύπο πονταρίσματος (bet_type), κάθε φορά που το παιχνίδι επαναφέρεται
-    reset_results_display() # Κλήση συνάρτησης όπου καθαρίζει τα αποτέλεσματα του καθε παικτη στην αρχή ενός νέου παιχνιδιού
-    spin_button.config(state="normal", bg="#1e90ff")  # ενεργοποιω το widget spin roulette
-    
+        bets[player] = []  # Create an empty list of bets for each player
+    history.clear() # Clear the results history list
+    update_display() # Call the function that updates the GUI labels displaying the players' balances.
+    update_result("") # Call the function that clears the roulette result at the beginning of a new game with an empty string
+    update_history() # Call the function that clears the history
+    reset_bots_display() # Call the function that clears the display of bot bets
+    update_bet_options() # Call the function that synchronizes the OptionMenu contents with the current bet type
+    reset_results_display() # Call the function that clears the results of each player at the beginning of a new game
+    spin_button.config(state="normal", bg="#1e90ff")  # Enable the Spin Roulette button
 
-# Συνάρτηση για ενημέρωση του label του αποτελέσματος περιστροφης της ρουλετας στο GUI
+
+# Function for updating the roulette result label in the GUI
 def update_result(text):
-    roulette_result_label.config(text=text)  # Εμφάνιση αποτελέσματος περιστροφής ρουλέτας
+    roulette_result_label.config(text=text)  # Display the roulette spin result
 
-    
-# Συνάρτηση για ενημέρωση της label του ιστορικού
+
+# Function for updating the history label
 def update_history():
-    # Ξεκλειδώνουμε το text widget για να γίνει επεξεργάσιμο
+    # Unlock the Text widget so that it can be modified
     history_label.config(state="normal")
-    history_label.delete("1.0", "end")  # Καθαρίζουμε το περιεχόμενο του label
+    history_label.delete("1.0", "end")  # Clear the contents of the Text widget
 
-    # Παίρνουμε τα τελευταία 15 αποτελέσματα από το ιστορικό (αντιστραμμένα)
-    for result in reversed(history[-15:]): #Διατρέχει από τη λίστα history τα τελευταία 15 αποτελέσματα από το πιο πρόσφατο στο πιο παλιό
-        parts = result.split(" ")  #Σπάμε το string του αποτελέσματος σε λίστα λέξεων με βάση τα κενά
-        number = parts[0] #Κρατάμε μόνο τον αριθμό για να το προσθέσουμε στο ιστορικό
+    # Get the last 15 results from the history in reverse order
+    for result in reversed(history[-15:]): # Iterate through the last 15 results, from the most recent to the oldest
+        parts = result.split(" ")  # Split the result string into a list of words using spaces
+        number = parts[0] # Keep only the number to add it to the history
         
-        if len(parts) > 1:  # Έλεγχος αν το μήκος της λίστας parts είναι >1
-            color_text = parts[1].strip("()")# Ορίζω μεταβληρη με το χρώμα του νούμερου. Αφαιρούμε τις παρενθεσεις απο το δευτερο στοιχειο που ειναι το χρωμα αν η λίστα parts έχει 2ο στοιχειο 
-                                            # έτσι ώστε το π.χ το (κοκκινο) να φαινεται 'κοκκινο', ενώ αν δεν έχει ορίζετε ως 'μαύρο'
+        if len(parts) > 1:  # Check whether the list contains more than one element
+            color_text = parts[1].strip("()") # Store the color of the number; remove the parentheses from the second element
+                                             # so that, for example, "(Red)" becomes "Red".
         else:
-            color_text = "Μαύρο"  #Διαφορετικά ορίζω τη μεταβλητή να έχει τη τιμή μαύρο
-                
-        # Επιλέγουμε χρώμα μορφοποίησης για το κείμενο με τον παρακάτω έλεγχο
+            color_text = "Black"  # Otherwise, assign "Black" to the variable
+            
+        # Select the text formatting color using the following check
         if color_text == "Κόκκινο":
             color = "red"
         elif color_text == "Πράσινο":
@@ -83,76 +90,79 @@ def update_history():
         else:
             color = "black"
 
-        # Ορίζουμε το στυλ της ετικέτας history_label
-        # Ετσι ωστε να εμφανιζει τους αριθμούς με τα χρώματα τους
-        history_label.tag_config("red", foreground="red") # το foreground οριζει το χρώμα του κειμένου
+        # Define the tags used by the history_label Text widget
+        # so that the numbers are displayed using their corresponding colors
+        history_label.tag_config("red", foreground="red") # The foreground option defines the text color
         history_label.tag_config("green", foreground="green")
         history_label.tag_config("black", foreground="black")
     
-        # Προσθέτουμε το αποτέλεσμα στο widget με το αντίστοιχο χρώμα
-        history_label.insert("end", f"{number}  ", (color,)) #Εισαγω στο τελος του label το νούμερο, και βαζω tag για χρωματισμο του νούμερου. Το ','στο τέλος του color είναι γιατι θελω να το πάρει ως tuple και οχι ως string
+        # Add the result to the widget using the corresponding color
+        history_label.insert("end", f"{number}  ", (color,)) # Insert the number at the end of the widget and apply the color tag.
+                                                            # The comma after color makes it a tuple instead of a string.
         
     
-    # Ξανακλειδώνουμε το widget για να μην είναι επεξεργασιμο
+    # Lock the widget again so that it cannot be edited
     history_label.config(state="disabled")
 
 
-#Συνάρτηση για ενημέρωση της εμφάνισης υπολοίπων όλων των παικτών
+# Function for updating the displayed balances of all players
 def update_display():
-    for player in balance_labels:  #Διατρέχει το dict balance_labels όπου περιέχει τις ετικετες (labels) του GUI που εμφανίζουν τα υπόλοιπα των παικτών
-        if player in balances: # Ελέγχει αν ο παίκτης έχει χρηματικό απόθεμα στο dict balances οπότε και είναι ενεργός στο παιχνίδι
-            balance_labels[player].config(text=f"{balances[player]}€")  # Ενημέρωση υπολοίπου του παίκτη απο το dict balances
+    for player in balance_labels:  # Iterate through the balance_labels dictionary containing the GUI labels that display players' balances
+        if player in balances: # Check whether the player has a balance in the balances dictionary and is therefore active in the game
+            balance_labels[player].config(text=f"{balances[player]}€")  # Update the player's balance from the balances dictionary
         else:
-            balance_labels[player].config(text="Εκτός παιχνιδιού") #Σε περίπτωση που ο παίκτης δεν έχει χρηματικό απόθεμα στο dict balnces, τότε εμφανίζεται το μύνημα "Εκτός παιχνιδιού"
-            
+            balance_labels[player].config(text="Out of game") # If the player is no longer in the balances dictionary, display "Out of game"
 
-# Συνάρτηση για καθαρισμό της εμφάνισης στοιχημάτων των bots
+
+# Function for clearing the displayed bot bets
 def reset_bots_display():
-    for bot in bot_labels: #Διατρέχει το dict bot_labels όπου περιέχει τις ετικέτες(labels) του GUI για εμφάνιση πονταρισμάτων bots
-        if bot in balances: # Ελέγχει αν το bot έχει χρηματικό απόθεμα στο dict balances οπότε και είναι ενεργός στο παιχνίδι
-            bot_labels[bot].config(text=f"{bot}: -") #Εμφανίζει στο label του bot_labels στιγμιαία "-" μέχρι το επόμενο ποντάρισμα
+    for bot in bot_labels: # Iterate through the bot_labels dictionary containing the GUI labels used to display bot bets
+        if bot in balances: # Check whether the bot has a balance and is therefore active in the game
+            bot_labels[bot].config(text=f"{bot}: -") # Display "-" until the next bet is placed
         else:
-            bot_labels[bot].config(text=f"{bot}: Εκτός παιχνιδιού") #Σε περίπτωση που το bot δεν έχει χρηματικό απόθεμα τότε εμφανίζεται το μύνημα "Εκτός παιχνιδιού"
+            bot_labels[bot].config(text=f"{bot}: Out of game") # If the bot no longer has a balance, display "Out of game"
 
 
-# Συνάρτηση για καθαρισμό της εμφάνισης των κερδών/ζημίων σε νέο παιχνίδι ή επαναφορά 
+# Function for clearing the displayed winnings/losses when starting or resetting a game
 def reset_results_display():
-    for player in results_labels:#Διατρέχει το dict results_labels όπου περιέχει τις ετικετες (labels) με τα κέρδη / ζημίες των παικτών μετά από κάθε γύρο
-        results_labels[player].config(text=f"{player}: -") #Εμφανίζει στο label του κάθε παικτη "-" όπου καθαρίζει τα αποτελέσματα των παικτών
+    for player in results_labels: # Iterate through the results_labels dictionary containing the labels for players' winnings/losses
+        results_labels[player].config(text=f"{player}: -") # Display "-" for each player to clear the previous results
 
 
-# Συνάρτηση για ενημέρωση επιλογών πονταρίσματος απο τον χρήστη
-def update_bet_options(*args): #το *args σημαινει ότι η συνάρτη παιρνει οποιοδήποτε αριθμό ορισμάτων γιατι συνδέεται με τη trace tkinter που περνά αυτόματα ορίσματα
-                            #όταν αλλάξει η τιμή bet_type καλείτι αυτοματα μέσω της μεθόδου trace
+# Function for updating the user's betting options
+def update_bet_options(*args): # *args means that the function can receive any number of arguments because it is connected to a Tkinter trace,
+                              # which automatically passes arguments when the bet_type value changes
     options = {
         "color": ["Κόκκινο", "Μαύρο"],
         "number": list(range(37)),
         "dozen": ["1η 12άδα (1-12)", "2η 12άδα (13-24)", "3η 12άδα (25-36)"]
-    }[bet_type.get()] #επιστρεφει τη τρεχουσα επιλογή του χρήστη στη μεταβλητή bet_type (σύνδεση με radiobutton)
-    bet_value.set(options[0]) #θετουμε την προεπιλεγμένη τιμή της μεταβλητής bet_value να είναι η 1η τιμη του επιλεγμένου κλειδιού
-    value_menu['menu'].delete(0, 'end') #Το value_menu['menu'] αναφέρεται στο "μενού" του OptionMenu, όπου καθαρίζει πλήρως το μενου πριν προσθέσει νεες επιλογές
+    }[bet_type.get()] # Return the current option based on the selected bet type connected to the selection buttons
+    bet_value.set(options[0]) # Set the default value of bet_value to the first option of the selected category
+    value_menu['menu'].delete(0, 'end') # The value_menu['menu'] refers to the OptionMenu's menu; clear it before adding the new options
 
     
-    for option in options:   #Διατρεχω το dict options  
-        value_menu['menu'].add_command(label=option, command=tk._setit(bet_value, option)) #προσθετω μια νέα εντολή στο dropdown menu με τις τιμες που έχουν τα values του
-        #κάθε κλειδιου ενώ το command..ειναι μία εσωτ συναρτηση της tkinter που ενημερώνει τη stringVar bet_value να πάρει τη τιμή option που ο χρήστης έχει τοποθετήσει στο μενού
+    for option in options:   # Iterate through the options
+        value_menu['menu'].add_command(label=option, command=tk._setit(bet_value, option)) # Add a new command to the dropdown menu for each option.
+                                                                                           # The command is an internal Tkinter function that updates the StringVar
+                                                                                           # bet_value with the selected option
 
-# Συνάρτηση εμφάνισης πονταρισμάτων bots
+
+# Function for displaying bot bets
 def show_bot_bets():
-    for bot in ["Bot 1", "Bot 2", "Bot 3"]: #επανάληψη που διατρέχει λίστα με Bots
-        if bot not in balances or balances[bot] <= 0: #έλεγχος αν το balances του καθε Bot είναι <=0 ή αν υπάρχει στη λίστα το Bot 
-            bot_labels[bot].config(text=f"{bot}: Εκτός παιχνιδιού") #στο text του label αναγράφει 'εκτος παιχνιδιού' αν επαληθευθει ο παραπάνω έλεγχος
-            continue #Αν ένα bot δεν πληρει τον παραπάνω έλεγχο το προσπερνά και παει στο επόμενο
+    for bot in ["Bot 1", "Bot 2", "Bot 3"]: # Iterate through the list of bots
+        if bot not in balances or balances[bot] <= 0: # Check whether the bot is not in balances or has a balance of 0 or less
+            bot_labels[bot].config(text=f"{bot}: Out of game") # Display "Out of game" if the above condition is true
+            continue # Skip this bot and move to the next one
 
-        bet_type_bot = random.choice(["color", "number", "dozen"]) #Αποδίδει τυχαια τιμή σε μεταβλητή ανάμεσα στα ["color", "number", "dozen"]
-        amount = 5 if bet_type_bot == "number" else random.choice([5, 10, 20]) #Αν επιλεγει number τότε αποδιδει τιμή 5 σε μεταβλητη αλλιώς παίρνει 1 τυχαια ανάμεσα στο 5,10 και 15
-        amount = min(amount, balances[bot]) #εξασφαλίζει ότι η τιμη που θα πάρει θα εξυπηρετεί το υπόλοιπο
+        bet_type_bot = random.choice(["color", "number", "dozen"]) # Randomly select a betting type from the available options
+        amount = 5 if bet_type_bot == "number" else random.choice([5, 10, 20]) # Bet 5 for a number bet; otherwise randomly select 5, 10, or 20
+        amount = min(amount, balances[bot]) # Ensure that the selected amount does not exceed the bot's available balance
 
-        if amount == 0:  #έλεγχος αν το amount ειναι 0
-            bot_labels[bot].config(text=f"{bot}: Δεν έχει αρκετά για ποντάρισμα") # Το bot_label του bot ενημερώνεται με το μύνημα "Δεν έχει αρκετά για ποντάρισμα"
-            continue #Αν ένα bot δεν πληρει τον παραπάνω έλεγχο το προσπερνά και παει στο επόμενο
+        if amount == 0:  # Check whether the betting amount is 0
+            bot_labels[bot].config(text=f"{bot}: Not enough money to bet") # Update the bot label with a message indicating insufficient funds
+            continue # Skip this bot and move to the next one
 
-        #Έλεγχος και αποδοση τιμης σε μεταβλητη ανάλογα με τη παραπάνω τυχαια επιλογη πονταρισματος
+        # Select a betting value based on the randomly selected betting type
         if bet_type_bot == "color":
             value = random.choice(["Κόκκινο", "Μαύρο"])
         elif bet_type_bot == "dozen":
@@ -160,290 +170,324 @@ def show_bot_bets():
         else:
             value = random.randint(0, 36)
 
-        balances[bot] -= amount #αφαίρεση του ποσού πονταρισματος από το balance του bot σε κάθε ποντάρισμα
+        balances[bot] -= amount # Subtract the bet amount from the bot's balance for the current round
 
-        bets[bot].append({"type": bet_type_bot, "value": value, "amount": amount}) #Προσθήκη λεξικού στη λίστα των bots με τις τυχαιες επιλογες 
-        bot_labels[bot].config(text=f"{bot}: {amount}€ στο/η {value} ({bet_type_bot})") #Ενημέρωση του label bot_labels με το ποσό και το ποντάρισμα του bot
+        bets[bot].append({"type": bet_type_bot, "value": value, "amount": amount}) # Add a dictionary containing the bot's random betting choices
+        bot_labels[bot].config(text=f"{bot}: {amount}€ στο/η {value} ({bet_type_bot})") # Update the bot label with the bet amount and selected value
         
     
-# Συνάρτηση πονταρίσματος παίκτη και έναρξης γύρου
+# Function for placing the player's bet and starting a round
 def place_bet():
-    if "Player" in balances: #ελεγχος αν υπαρχει ο "Player" στο dict balances
-        amount = int(bet_amount.get()) # απόδοση σε μεταβλητη η τιμή που θα επιλέξει ο παικτης απο το bet_amount μέσω τη μεθόδου .get()
-        if amount > balances["Player"]: # Έλεγχος αν το ποσό που επέλεξε ο παικτης είναι διαθέσιμο στο υπόλοιπο του παίκτη
-            tk.messagebox.showerror("Σφάλμα", "Δεν έχετε αρκετά χρήματα για το ποντάρισμα σας!") #Ριχνει pop up μύνημα ότι δεν εχει διαθεσιμο υπόλοιπο για αυτο το ποντάρισμα μεσω του messagebox
-            return #τερματίζει η συνάρτηση
+    if "Player" in balances: # Check whether "Player" exists in the balances dictionary
+        amount = int(bet_amount.get()) # Convert the amount selected by the player from bet_amount into an integer
+        if amount > balances["Player"]: # Check whether the selected amount is available in the player's balance
+            tk.messagebox.showerror("Σφάλμα", "Δεν έχετε αρκετά χρήματα για το ποντάρισμα σας!") # Display a pop-up error message indicating insufficient funds
+            return # Terminate the function
 
-        balances["Player"] -= amount #αφαιρείται το ποσο πονταρισματος από το διαθέσιμο υπολοίπο του παικτη
+        balances["Player"] -= amount # Subtract the bet amount from the player's available balance
 
-        bets["Player"].append({"type": bet_type.get(), "value": bet_value.get(), "amount": amount}) #προσθηκη στο λεξικό bets τα στοιχεια πονταρισματος του παίκτη
+        bets["Player"].append({"type": bet_type.get(), "value": bet_value.get(), "amount": amount}) # Add the player's bet information to the bets dictionary
 
-    show_bot_bets() # Συναρτηση που εμφανίζει τα πονταρισματα των Bots
-    spin_roulette() # Συνάρτηση για έναρξη περιστροφής ρουλέτας
-    update_display()# Συναρτηση που ανανεωνει τα υπόλοιπα των παίκτών ή τους ενημερωνει ότι είναι εκτος παιχνιδιου
+    show_bot_bets() # Function that displays the bots' bets
+    spin_roulette() # Function that starts the roulette spin
+    update_display() # Function that updates the players' balances or indicates that they are out of the game
+
+
     
-    
-
-# Συνάρτηση έναρξης περιστροφής ρουλέτας
+# Function for starting the roulette spin
 def spin_roulette():
         
-    number = random.randint(0, 36) #αποδοση τιμης σε μεταβλητη τυχαια επιλογη αριθμού απο 0-36
-    #Έλεγχος και αποδοση τιμης σε μεταβλητη του χρωματος των αριθμων της ρουλετα σύμφωνα με τη τυχαια τιμή του number
+    number = random.randint(0, 36) # Assign a randomly selected number from 0 to 36 to the variable
+    # Determine the color of the roulette number according to the randomly generated number
     color = "Κόκκινο" if number in RED_NUMBERS else "Μαύρο" if number != 0 else "Πράσινο"
 
-    # Έλεγχος αριθμών που αντιστοιχουν σε 12αδες
-    if 1 <= number <= 12: #1-12
+    # Determine the dozen corresponding to the roulette number
+    if 1 <= number <= 12: # 1-12
         dozen = "1η 12άδα (1-12)"
-    elif 13 <= number <= 24: #13-24
+    elif 13 <= number <= 24: # 13-24
         dozen = "2η 12άδα (13-24)"
-    elif 25 <= number <= 36: #25-36
+    elif 25 <= number <= 36: # 25-36
         dozen = "3η 12άδα (25-36)"
     else:
-        dozen = None #Αν η ρουλέτα βγάλει το 0, η μεταβλητή dozen παίρνει την τιμή None, καθώς το 0 δεν ανήκει σε καμία 12άδα
+        dozen = None # If the roulette result is 0, dozen is set to None because 0 does not belong to any dozen
 
-    result_text = f" {number} ({color})" #Δημιουργει ενα string με τον αριθμό και το χρωμα
-    if dozen: #ελεγχος αν η μεταβλητη dozen έχει κάποια τιμή (παντα εκτος αν ο αριθμος ειναι 0) 
-        result_text += f" - {dozen}" #Αν ισχυει προσθετει στο παραπανω string τη 12-αδα
-    update_result(result_text) #Καλει τη συναρτηση και παιρνει ως ορισμα το αποτελεσμα result text για την εμφανιση του αποτελέσματος της περιστροφης
+    result_text = f" {number} ({color})" # Create a string containing the number and its color
+    if dozen: # Check whether the dozen variable contains a value
+        result_text += f" - {dozen}" # If so, append the corresponding dozen to the result string
+    update_result(result_text) # Call the function with result_text as the argument to display the roulette result
 
-    history.append(f"{number} ({color})") #Προσθετει το αποτελεσμα στη λιστα του ιστορικου
-    update_history() #Καλεί τη συνάρτηση για να εμφανισει το αποτέλεσμα στο ιστορικο
-    calculate_winnings(number, color, dozen) # Καλει τη συνάρτηση για να υπολόγίσει τα κέρδη των παικτων 
-    update_display() #Καλει τη συνάρτηση για να να εμφανισει το υπολοιπο των παικτων ή αν δεν έχουν υπολοιπο να εμφανίσει μύνημα "Εκτός παιχνιδιού"
+    history.append(f"{number} ({color})") # Add the result to the history list
+    update_history() # Call the function to display the result in the history
+    calculate_winnings(number, color, dozen) # Call the function to calculate the players' winnings
+    update_display() # Call the function to display the players' balances or indicate that they are out of the game
 
-    for player in bets: #Διατρεχει το λεξικο bets με τα στοιχήματα των παικτων
-        bets[player] = [] #Καθαρίζει τα παλια πονταρίσματα, έτσι ώστε να πάρει τα πονταρίσματα του επόμενου γύρου
+    for player in bets: # Iterate through the bets dictionary
+        bets[player] = [] # Clear the previous bets so that the next round can receive new bets
         
-    #Έλεγχος αν το autoplay για τα bots είναι true και αν είναι τουλαχιστον 2 bots είναι στο παιχνιδι και ο παίκτης έχει βγει από αυτο (δεν είναι στο balances)
+    # Check whether auto-play is enabled, more than one player remains in the game,
+    # and the human player has been eliminated from the balances dictionary
     if auto_play.get() and len(balances) > 1 and "Player" not in balances: 
                                                                              
-        root.after(2000, place_bet) # Η μεθοδος root.after εκτελεί τη συναρτηση place bet καθε 2000 ms οπου τα bots παιζουν αυτόματα
+        root.after(2000, place_bet) # The root.after method calls place_bet after 2000 ms so that the bots can continue playing automatically
+
 
         
-# Συνάρτηση υπολογισμού κερδών
+# Function for calculating winnings
 def calculate_winnings(number, color, dozen):
-    losers = [] # Δημιουργια κενής λίστας
-    for player in list(balances): #Διατρεχει το dict balances δημιουργώντας αντίγραφο της λίστας των κλειδιών
-        total = 0  #Απόδοση τιμης σε μεταβλητη για συνολικα κέρδη παίκτη 
+    losers = [] # Create an empty list
+    for player in list(balances): # Iterate through a copy of the list of keys in the balances dictionary
+        total = 0  # Initialize the variable that stores the player's total winnings
 
-        #Έλεγχος αν ο παίκτης έχει ποντάρει (παιρνει τιμη με τη μεθοδο .get()) 
+        # Check whether the player has placed a bet
         if bets.get(player):
-            bet_total = bets[player][0]["amount"] #Αποδιδει σε μεταβλητη το ποσο πονταρισματος απο τη λίστα με λεξικά bets[player]
+            bet_total = bets[player][0]["amount"] # Store the bet amount from the player's first bet
         else:
-            bet_total = 0 #Απόδιδει τιμη 0 αν ο παίκτης είναι εκτός λιστας balances
+            bet_total = 0 # Set the bet amount to 0 if the player has no bet
 
-        for bet in bets.get(player, []): #Διατρέχει τη λίστα πονταρισμάτων (αν δεν έχει πονταρισμα επιστρεφει κενη λιστα)
-            if bet["type"] == "number" and int(bet["value"]) == number: #ελεγχος αν ο τυπος πονταρισματος ειναι number και ο αριθμός που πόνταρε ο παικτης είναι ίδιος με τον αριθμό της ρουλετας
-                total += bet["amount"] * 36 #Προσθετει το ποσο που πονταρε ο παικτης * 36 στη μεταβλητη total 
-            elif bet["type"] == "color" and bet["value"] == color: #ελεγχος αν ο τυπος πονταρισματος ειναι color και  το χρωμα που πόνταρε ο παικτης είναι ίδιο με το χρωμα του αριθμού της ρουλετας
-                total += bet["amount"] * 2 #Προσθετει το ποσο που πονταρε ο παικτης * 2 στη μεταβλητη total 
-            elif bet["type"] == "dozen" and bet["value"] == dozen: #ελεγχος αν ο τυπος πονταρισματος ειναι dozen και η 12αδα που πόνταρε ο παικτης είναι η σωστή με αυτή που έβγαλε η ρουλετα
-                total += bet["amount"] * 3 #Προσθετει το ποσο που πονταρε ο παικτης * 3 στη μεταβλητη total 
- 
-        balances[player] += total #Προσθέτει στο balance του παίκτη το κερδος εφοσον υπάρχει
+        for bet in bets.get(player, []): # Iterate through the player's list of bets; return an empty list if there are no bets
+            if bet["type"] == "number" and int(bet["value"]) == number: # Check whether the bet type is number and the selected number matches the roulette result
+                total += bet["amount"] * 36 # Add the bet amount multiplied by 36 to total
+            elif bet["type"] == "color" and bet["value"] == color: # Check whether the bet type is color and the selected color matches the roulette result
+                total += bet["amount"] * 2 # Add the bet amount multiplied by 2 to total
+            elif bet["type"] == "dozen" and bet["value"] == dozen: # Check whether the bet type is dozen and the selected dozen matches the roulette result
+                total += bet["amount"] * 3 # Add the bet amount multiplied by 3 to total
 
-        if total > 0: #έλεγχος αν η μεταβλητη total είναι > 0
-            results_labels[player].config(text=f"{player}: κέρδισε {total}€", fg="green") #ενημερωνει το label results_label του παίκτη με μύνημα που αναγραφει το ποσο που κέρδισε σε πρασινη γραμματοσειρα
+        balances[player] += total # Add the winnings to the player's balance, if there are any
+
+        if total > 0: # Check whether total winnings are greater than 0
+            results_labels[player].config(text=f"{player}: κέρδισε {total}€", fg="green") # Update the player's result label with the amount won in green
         else:
-            results_labels[player].config(text=f"{player}: έχασε {bet_total}€", fg="red") #ενημερωνει το label results_label του παίκτη με μύνημα που αναγραφει το ποσο πονταρισματος που έχασε σε κοκκινη γραμματοσειρα
+            results_labels[player].config(text=f"{player}: έχασε {bet_total}€", fg="red") # Update the player's result label with the lost bet amount in red
 
-        if balances[player] <= 0: #έλεγχος αν ο παικτης εχει υπόλοιπο <=0
-            losers.append(player) # Τότε προσθετει τον παικτη σε λιστα losers
-            if player == "Player": #ελεγχος αν ο ηττημενος είναι ο Player 
-                spin_button.config(state="disabled", bg="gray")  # Απενεργοποίηση το widget spin button
+        if balances[player] <= 0: # Check whether the player's balance is less than or equal to 0
+            losers.append(player) # Add the player to the losers list
+            if player == "Player": # Check whether the eliminated player is the human Player
+                spin_button.config(state="disabled", bg="gray")  # Disable the Spin Roulette button
 
 
-    for player in losers: #Διατρέχει τη λίστα losers
-        results_labels[player].config(text=f"{player}: Εκτός παιχνιδιού!") #ενημερωνει το label results_labels με μύνημα οτι ο παικτης είναι εκτός παιχνιδιου
-        del balances[player] #Διαγραφει τον παικτη από το λεξικο balances
+    for player in losers: # Iterate through the losers list
+        results_labels[player].config(text=f"{player}: Εκτός παιχνιδιού!") # Update the result label to indicate that the player is out of the game
+        del balances[player] # Remove the player from the balances dictionary
 
     
-    if len(balances) == 1: #ελεγχος αν παραμεινει μονο ενας παικτης στο balances
-        winner = list(balances.keys())[0] #Επιστρεφει όλα τα κλειδια του balances σε λίστα(μονο 1, αφου πέρασε τον έλεγχο) και αποδισει τη πρωτη τιμη της λίστας στη μεταβλητη winner
-        results_labels[winner].config(text=f"{winner}: Νικητής!") # ενημερωνει το label results_labels που αντιστοιχει στον νικητη εμφανίζοντας μύνημα 'Νικητης'
-        tk.messagebox.showinfo("Νικητής!", f"Ο {winner} είναι ο νικητής του παιχνιδιού!!!") #Εμφάνιση pop up ότι υπάρχει νικητης και ειναι ο winner
-        spin_button.config(state="disabled", bg="gray")  # Απενεργοποίηση του widget spin roulette για αποφυγή συνεχιση παιχνιδιου πατώντας για νεα περιστροφη
+    if len(balances) == 1: # Check whether only one player remains in the balances dictionary
+        winner = list(balances.keys())[0] # Convert the keys of balances to a list and retrieve the first (and only) value
+        results_labels[winner].config(text=f"{winner}: Νικητής!") # Update the result label corresponding to the winner
+        tk.messagebox.showinfo("Νικητής!", f"Ο {winner} είναι ο νικητής του παιχνιδιού!!!") # Display a pop-up announcing the winner
+        spin_button.config(state="disabled", bg="gray")  # Disable the Spin Roulette button to prevent further spins
 
-        root.quit()  #Τερματισμός παιχνιδιού
+        root.quit()  # Terminate the game
+
 
 # --- GUI Setup ---
-root = tk.Tk() # Δημιουργεί το κύριο παράθυρο της εφαρμογής
-root.title("Project 55 (e-Roulette)") #Ορίζει τον τίτλο του παραθύρου που εμφανίζεται στην μπάρα τίτλου.
-root.geometry("1200x1200") #Καθορίζει το μέγεθος του παραθύρου (πλάτος x ύψος).
-root.configure(bg="#2e2e2e") #Ορίζει σκούρο γκρι φόντο για όλο το παράθυρο
+root = tk.Tk() # Create the main application window
+root.title("Project 55 (e-Roulette)") # Set the title displayed in the title bar
+root.geometry("1200x1200") # Set the window size (width x height)
+root.configure(bg="#2e2e2e") # Set a dark gray background for the entire window
+
 
 # --- TOP FRAME ---
-top_frame = tk.Frame(root, bg="#2e2e2e") #Δημιουργεί ένα frame στην κορυφή του παραθύρου
-top_frame.pack(fill="x", pady=(5, 5)) #Τοποθετεί το frame οριζόντια (γεμίζει όλο το πλάτος), με κατακόρυφο περιθώριο 5 pixels.
-tk.Button(top_frame, text="Επαναφορά Παιχνιδιού", command=reset_game, bg="#4e4e4e", fg="white").pack(side="right", padx=10) #Προσθέτει κουμπί επαναφοράς παιχνιδιού (καλεί reset_game), με σκούρα εμφάνιση που τοποθετείται δεξιά
+top_frame = tk.Frame(root, bg="#2e2e2e") # Create a frame at the top of the window
+top_frame.pack(fill="x", pady=(5, 5)) # Place the frame horizontally across the window with 5-pixel vertical padding
+tk.Button(top_frame, text="Επαναφορά Παιχνιδιού", command=reset_game, bg="#4e4e4e", fg="white").pack(side="right", padx=10) # Add a reset button that calls reset_game and is positioned on the right
+
 
 # --- Bet Frame ---
-bet_header = tk.Label(root, text="Ποντάρισμα", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white")#Εμφανίζει την επικεφαλίδα "Ποντάρισμα" με bold γράμματα και κεντραρισμένη εμφάνιση
+bet_header = tk.Label(root, text="Ποντάρισμα", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white") # Display the "Bet" heading using bold, centered text
 bet_header.pack(pady=(10, 5))
 
-bet_frame = tk.LabelFrame(root, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white") #Πλαίσιο για τα κουμπιά επιλογών πονταρίσματος, με περιθώρια και πλαίσιο
+bet_frame = tk.LabelFrame(root, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white") # Create a frame for the betting controls with padding and a border
 bet_frame.pack(padx=50, pady=(0, 10), fill="x")
 
-bet_inner_frame = tk.Frame(bet_frame, bg="#3e3e3e") #Εσωτερικό frame για καλύτερη οργάνωση των κουμπιών πονταρίσματος.
+bet_inner_frame = tk.Frame(bet_frame, bg="#3e3e3e") # Create an inner frame for better organization of the betting controls
 bet_inner_frame.pack(expand=True)
 
-# Μεταβλητή επιλογής τύπου πονταρίσματος (συνδέεται με τα κουμπιά επιλογής πονταρίσματος)
-bet_type = tk.StringVar(value="color") #Μεταβλητή που κρατά τον επιλεγμένο τύπο πονταρίσματος ("color", "number", "dozen").
 
-# --- Κουμπιά επιλογής τύπου πονταρίσματος (tk.Button, λειτουργούν σαν toggle μέσω select_bet_type) ---
-bet_buttons = {} # Λεξικό για αποθήκευση των κουμπιών πονταρίσματος, ώστε να αλλάζουμε εμφάνιση (χρώμα) ανάλογα με την επιλογή.
+# Variable for selecting the bet type (connected to the betting buttons)
+bet_type = tk.StringVar(value="color") # Variable that stores the selected bet type ("color", "number", or "dozen").
 
-# Συνάρτηση που ενεργοποιεί το button και απενεργοποιεί τα άλλα
+
+# --- Bet type selection buttons (tk.Button, functioning as toggles through select_bet_type) ---
+bet_buttons = {} # Dictionary used to store the betting buttons so that their appearance can be changed according to the selection
+
+
+# Function that activates the selected button and deactivates the others
 def select_bet_type(selected_type):
-    # Αλλάζουμε τη μεταβλητή bet_type
+    # Change the bet_type variable
     bet_type.set(selected_type)
-    # Ενημέρωση εμφανιζόμενων επιλογών
+    # Update the displayed options
     update_bet_options()
 
-    # Ενεργοποιεί οπτικά μόνο το επιλεγμένο κουμπί (μπλε χρώμα), ενώ τα υπόλοιπα παραμένουν γκρι
+    # Visually activate only the selected button (blue), while the others remain gray
     for bet, button in bet_buttons.items():
         if bet == selected_type:
-            button.config(bg="#1e90ff", fg="white")  # Μπλε φόντο, λευκό κείμενο
+            button.config(bg="#1e90ff", fg="white")  # Blue background, white text
         else:
-            button.config(bg="#3e3e3e", fg="white")  # Γκρι φόντο, λευκό κείμενο
+            button.config(bg="#3e3e3e", fg="white")  # Gray background, white text
 
-# Δημιουργία κουμπιών για επιλογη πονταρισματος
+
+# Create the betting type selection buttons
 bet_buttons["color"] = tk.Button(bet_inner_frame, text="Χρώμα", width=12, font=("Arial", 14, "bold"),
                                  command=lambda: select_bet_type("color"), bg="#1e90ff", fg="white")
-bet_buttons["color"].grid(row=0, column=0, padx=10, pady=5) #Τοποθετεί το κουμπί στο grid layout ομοίως και για αριθμό,12άδα.
+bet_buttons["color"].grid(row=0, column=0, padx=10, pady=5) # Place the button in the grid layout, similarly to the number and dozen buttons
 
 bet_buttons["number"] = tk.Button(bet_inner_frame, text="Αριθμός", width=12, font=("Arial", 14, "bold"),
-                                  command=lambda: select_bet_type("number"), bg="#3e3e3e", fg="white")
+                                   command=lambda: select_bet_type("number"), bg="#3e3e3e", fg="white")
 bet_buttons["number"].grid(row=0, column=1, padx=10, pady=5)
 
 bet_buttons["dozen"] = tk.Button(bet_inner_frame, text="12άδα", width=12, font=("Arial", 14, "bold"),
-                                 command=lambda: select_bet_type("dozen"), bg="#3e3e3e", fg="white")
+                                  command=lambda: select_bet_type("dozen"), bg="#3e3e3e", fg="white")
 bet_buttons["dozen"].grid(row=0, column=2, padx=10, pady=5)
 
+
 # OptionMenu value
-bet_value = tk.StringVar() #Μεταβλητή που αποθηκεύει την τιμή του πονταρίσματος (π.χ. "Κόκκινο", "Μαύρο", αριθμός, ή 12άδα).
-value_menu = tk.OptionMenu(bet_inner_frame, bet_value, "Κόκκινο", "Μαύρο") #Δημιουργεί default μενού επιλογής για χρώμα. (Η λίστα αλλάζει με βάση το bet_type μέσω της update_bet_options().)
-value_menu.config(bg="#3e3e3e", fg="white", font=("Arial", 12), width=15) #Μορφοποίηση Option Menu
-value_menu["menu"].config(bg="#3e3e3e", fg="white")#Μορφοποίηση Dropdown Menu
-value_menu.grid(row=1, column=0, columnspan=3, pady=10)#Τοποθετεί το OptionMenu στο grid layout
+bet_value = tk.StringVar() # Variable that stores the selected bet value (e.g. "Red", "Black", a number, or a dozen)
+value_menu = tk.OptionMenu(bet_inner_frame, bet_value, "Κόκκινο", "Μαύρο") # Create the default color selection menu. The list changes according to bet_type through update_bet_options()
+value_menu.config(bg="#3e3e3e", fg="white", font=("Arial", 12), width=15) # Format the OptionMenu
+value_menu["menu"].config(bg="#3e3e3e", fg="white") # Format the dropdown menu
+value_menu.grid(row=1, column=0, columnspan=3, pady=10) # Place the OptionMenu in the grid layout
+
 
 # Amount selector
-tk.Label(bet_inner_frame, text="ΠΟΣΟ:", bg="#3e3e3e", fg="white", font=("Arial", 12, "bold")).grid(row=2, column=0, pady=5) #Ετικέτα για το ποσό
-bet_amount = tk.StringVar(value="1") #Μεταβλητή για αποθήκευση ποσού πονταρίσματος (π.χ. 1€, 2€, ..., 20€) default επιλογή το 1
-#Δημιουργεί dropdown με ποσά από 1 έως 20 )
+tk.Label(bet_inner_frame, text="ΠΟΣΟ:", bg="#3e3e3e", fg="white", font=("Arial", 12, "bold")).grid(row=2, column=0, pady=5) # Label for the betting amount
+bet_amount = tk.StringVar(value="1") # Variable for storing the betting amount; default value is 1
+# Create a dropdown menu with amounts from 1 to 20
 amount_menu = tk.OptionMenu(bet_inner_frame, bet_amount, *[str(i) for i in range(1, 21)])
-amount_menu.config(bg="#3e3e3e", fg="white", font=("Arial", 12), width=8) # Μορφοποίηση του OptionMenu ποσού (κουμπί και dropdown) και τοποθέτηση με grid
+amount_menu.config(bg="#3e3e3e", fg="white", font=("Arial", 12), width=8) # Format the betting amount OptionMenu
 amount_menu["menu"].config(bg="#3e3e3e", fg="white")
 amount_menu.grid(row=2, column=1, pady=5)
 
-# button_frame (θα το βάλουμε με sticky="ew" για να είναι stretch)
-button_frame = tk.Frame(bet_inner_frame, bg="#3e3e3e") #Δημιουργεί ένα εσωτερικό frame για για την ομαδοποίηση των κουμπιών (Spin και Auto Play)
+
+# button_frame (used with sticky="ew" so that it can stretch horizontally)
+button_frame = tk.Frame(bet_inner_frame, bg="#3e3e3e") # Create an inner frame for grouping the Spin and Auto Play buttons
 button_frame.grid(row=3, column=0, columnspan=3, pady=10, sticky="ew")
 
+
 # Spin button
-# Το βασικό κουμπί "Spin", καλεί τη συνάρτηση place_bet() όταν πατηθεί
+# The main "Spin" button, which calls place_bet() when pressed
 spin_button = tk.Button(button_frame, text="Spin Roulette", command=place_bet, bg="#1e90ff", fg="white", font=("Arial", 12, "bold"))
 spin_button.pack(anchor="center", pady=5)
 
+
 # Auto Play checkbox
-auto_play = tk.BooleanVar()# Μεταβλητή που δείχνει αν είναι ενεργοποιημένο το auto play (True/False).
-auto_play_check = tk.Checkbutton(button_frame, text="Auto Play (μόνο Bots)", variable=auto_play, bg="#3e3e3e", fg="white", selectcolor="#1e90ff", font=("Arial", 12, "bold")) #Checkbox για ενεργοποίηση/απενεργοποίηση της αυτόματης λειτουργίας bots.
+auto_play = tk.BooleanVar() # Variable indicating whether Auto Play is enabled (True/False)
+auto_play_check = tk.Checkbutton(button_frame, text="Auto Play (μόνο Bots)", variable=auto_play, bg="#3e3e3e", fg="white", selectcolor="#1e90ff", font=("Arial", 12, "bold")) # Checkbox for enabling/disabling automatic bot play
 auto_play_check.pack(anchor="center", pady=(5, 0))
 
-# --- Υπόλοιπα + Πονταρίσματα ---
-side_frame = tk.Frame(root, bg="#2e2e2e") #Δημιουργεί ένα οριζόντιο πλαίσιο που περιλαμβάνει δύο στήλες: Υπόλοιπα παικτών και Πονταρίσματα γύρου
+
+# --- Balances + Bets ---
+side_frame = tk.Frame(root, bg="#2e2e2e") # Create a horizontal frame containing two columns: player balances and round bets
 side_frame.pack(padx=20, pady=(10, 10), fill="x")
 
-# Υπόλοιπα Header
+
+# Balances Header
 info_header = tk.Label(side_frame, text="Υπόλοιπα παικτών", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white")
 info_header.grid(row=0, column=0, sticky="ew", padx=5, pady=(0, 5))
 
-# Πονταρίσματα Header
+
+# Bets Header
 bots_header = tk.Label(side_frame, text="Πονταρίσματα Γύρου Bots", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white")
 bots_header.grid(row=0, column=1, sticky="ew", padx=5, pady=(0, 5))
 
-# Υπόλοιπα Frame
-# Ένα LabelFrame για εμφάνιση του υπολοίπου κάθε παίκτη
+
+# Balances Frame
+# A LabelFrame used to display each player's balance
 info_frame = tk.LabelFrame(side_frame, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white")
 info_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=(0, 5))
 
-#Εμφανίζει για κάθε παίκτη την ετικέτα με το όνομά του και δίπλα το υπόλοιπο (π.χ. 300€)
-#Χρησιμοποιείται λεξικό balance_labels για να μπορούμε να ενημερώνουμε δυναμικά τα υπόλοιπα μετά από κάθε γύρο
+
+# Display each player's name and balance next to it (e.g. 300€)
+# The balance_labels dictionary is used to dynamically update the balances after each round
 for i, player in enumerate(["Player", "Bot 1", "Bot 2", "Bot 3"]):
     tk.Label(info_frame, text=f"{player}:", bg="#3e3e3e", fg="white", font=("Arial", 13, "bold")).grid(row=i, column=0, sticky="e", pady=3, padx=5)
     balance_labels[player] = tk.Label(info_frame, text="300€", bg="#3e3e3e", fg="white", font=("Arial", 13, "bold"))
     balance_labels[player].grid(row=i, column=1, sticky="w", pady=3, padx=5)
 
-# Πονταρίσματα Frame
-# Δεύτερο LabelFrame για την εμφάνιση του τι πόνταρε κάθε bot στον τρέχοντα γύρο.
+
+# Bets Frame
+# A second LabelFrame used to display what each bot bet during the current round
 bots_frame = tk.LabelFrame(side_frame, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white")
 bots_frame.grid(row=1, column=1, sticky="nsew", padx=5, pady=(0, 5))
 
-# Αρχικοποιεί τις γραμμές πονταρίσματος για κάθε bot. Το περιεχόμενο αλλάζει όταν πατηθεί το "Spin".
-#Το bot_labels είναι λεξικό που επιτρέπει να ενημερώνουμε γρήγορα το τι πόνταρε κάθε bot.
+
+# Initialize the betting rows for each bot. The content changes when "Spin" is pressed.
+# The bot_labels dictionary allows us to quickly update what each bot has bet
 for bot in ["Bot 1", "Bot 2", "Bot 3"]:
     bot_labels[bot] = tk.Label(bots_frame, text=f"{bot}: -", bg="#3e3e3e", fg="white", font=("Arial", 13, "bold"), anchor="w", width=35)
     bot_labels[bot].pack(anchor="w", pady=3)
 
-# Ισορροπία πλαισίων
-# Ορισμός ίδιου πλάτους για στήλες: Υπόλοιπα και Πονταρίσματα
+
+# Balance between frames
+# Set equal column widths for Balances and Bets
 side_frame.columnconfigure(0, weight=1, uniform="group_side")
 side_frame.columnconfigure(1, weight=1, uniform="group_side")
 
-# --- Αποτελέσματα + Μπίλια ---
-# Δημιουργεί ένα οριζόντιο πλαίσιο που θα περιλαμβάνει τα αποτελέσματα των παικτών και την ένδειξη της μπίλιας
+
+# --- Results + Ball ---
+# Create a horizontal frame that contains the players' results and the roulette ball result
 results_side_frame = tk.Frame(root, bg="#2e2e2e")
 results_side_frame.pack(padx=20, pady=(10, 10), fill="x")
 
+
 # Headers
-#Επικεφαλίδα για τη στήλη αποτελεσμάτων παικτών
+# Header for the players' results column
 results_header = tk.Label(results_side_frame, text="Αποτελέσματα Γύρου", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white")
 results_header.grid(row=0, column=0, sticky="ew", padx=5, pady=(0, 5))
 
-#Επικεφαλίδα για τη στήλη που δείχνει το αποτέλεσμα της μπίλιας
+
+# Header for the column displaying the roulette ball result
 single_result_header = tk.Label(results_side_frame, text="Μπίλια", font=("Arial", 14, "bold"), anchor="center", bg="#2e2e2e", fg="white")
 single_result_header.grid(row=0, column=1, sticky="ew", padx=5, pady=(0, 5))
 
-# Αποτελέσματα Frame
-# Δημιουργεί ένα πλαίσιο με περίγραμμα για τα αποτελέσματα κάθε παίκτη.
+
+# Results Frame
+# Create a bordered frame for displaying the results of each player
 results_frame = tk.LabelFrame(results_side_frame, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white")
 results_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=(0, 5))
 
-#Για κάθε παίκτη δημιουργείται ένα Label που θα εμφανίζει το αποτέλεσμα του γύρου (π.χ., αν κέρδισε ή όχι).
-# Τα labels αποθηκεύονται σε λεξικό results_labels για εύκολη ενημέρωση μετά από κάθε γύρο
+
+# Create a Label for each player to display the result of the round (e.g. whether they won or lost)
+# The labels are stored in the results_labels dictionary for easy updating after each round
 for player in ["Player", "Bot 1", "Bot 2", "Bot 3"]:
     results_labels[player] = tk.Label(results_frame, text=f"{player}: -", bg="#3e3e3e", fg="white", font=("Arial", 13, "bold"), anchor="w", width=25)
     results_labels[player].pack(anchor="w", pady=3)
 
-# Μπίλια Frame
-# Δημιουργεί ένα πλαίσιο για την εμφάνιση του αριθμού,χρώματος και 12άδας που έκατσε η μπίλια
+
+# Ball Frame
+# Create a frame for displaying the number, color, and dozen corresponding to the roulette result
 single_result_frame = tk.LabelFrame(results_side_frame, padx=15, pady=15, relief="solid", borderwidth=2, bg="#3e3e3e", fg="white")
 single_result_frame.grid(row=1, column=1, sticky="nsew", padx=5, pady=(0, 5))
 
-# Label όπου εμφανίζεται το αποτέλεσμα του spin
+
+# Label where the spin result is displayed
 roulette_result_label = tk.Label(single_result_frame, text="", font=("Arial", 16, "bold"), bg="#3e3e3e", fg="white", anchor="center")
 roulette_result_label.pack(expand=True, fill="both")
 
-# Ορισμός ίδιου πλάτους για στήλες: Αποτελέσματα και Μπίλια
+
+# Set equal column widths for Results and Ball
 results_side_frame.columnconfigure(0, weight=1, uniform="group_results")
 results_side_frame.columnconfigure(1, weight=1, uniform="group_results")
 
-# --- ΙΣΤΟΡΙΚΟ Header ---
-# Επικεφαλίδα για το "Ιστορικό παιχνιδιού"
+
+# --- HISTORY Header ---
+# Header for the "Game History" section
 history_header = tk.Label(root, text="Ιστορικό παιχνιδιού", font=("Arial", 14, "bold"), anchor="w", bg="#2e2e2e", fg="white")
 history_header.pack(padx=20, pady=(10, 5), anchor="w")
 
-# Text widget για έγχρωμα αριθμημένα ιστορικά
+
+# Text widget for the colored numerical history
 history_frame = tk.Frame(root, bg="#2e2e2e")
 history_frame.pack(padx=20, pady=(0, 10), anchor="w")
 
-#Δημιουργεί ένα Text widget για την εμφάνιση του ιστορικού
+
+# Create a Text widget for displaying the history
 history_label = tk.Text(history_frame, height=2, width=45, bg="#3e3e3e", fg="white", font=("Arial", 16, "bold"), padx=10, pady=10, relief="solid", borderwidth=2,)
 history_label.pack()
-history_label.config(state="disabled") # (state="disabled") ώστε ο χρήστης να μην μπορεί να αλλάξει το ιστορικό
+history_label.config(state="disabled") # Set state to disabled so that the user cannot modify the history
+
 
 # --- START ---
-# Προσθέτει έναν "παρατηρητή" στη μεταβλητή bet_type που καλεί τη συνάρτηση update_bet_options κάθε φορά που αλλάζει το ποντάρισμα (π.χ. από "color" σε "number").
+# Add a "trace" to the bet_type variable that calls update_bet_options whenever the bet type changes (e.g. from "color" to "number")
 bet_type.trace("w", update_bet_options)
-reset_game() #Καλεί τη συνάρτηση reset_game() για να αρχικοποιήσει το παιχνίδι και τα στοιχεία του GUI (π.χ. να εμφανίσει τα αρχικά υπόλοιπα)
-root.mainloop() # Ξεκινά το βασικό loop του Tkinter (root.mainloop()), το οποίο κρατά το παράθυρο ανοιχτό και περιμένει γεγονότα από τον χρήστη
+reset_game() # Call reset_game() to initialize the game and GUI elements (e.g. display the initial balances)
+root.mainloop() # Start the Tkinter main loop, which keeps the window open and waits for user events
